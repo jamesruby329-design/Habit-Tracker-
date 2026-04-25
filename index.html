@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="description" content="FUBY Habit Tracker — build streaks, track habits, grow daily."/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="FUBY"/>
+  <meta name="theme-color" content="#0f1923" id="themeColorMeta"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <title>FUBY Habit Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+/* ══════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════ */
+:root {
+  --teal:      #00c9a7;
+  --teal-dim:  #00a889;
+  --fire:      #ff6b35;
+  --gold:      #ffd166;
+  --danger:    #ff4757;
+
+  /* DARK (default) */
+  --bg:        #0d1117;
+  --bg2:       #161b22;
+  --surface:   #1c2333;
+  --surface2:  #21262d;
+  --border:    #30363d;
+  --text:      #e6edf3;
+  --text2:     #8b949e;
+  --text3:     #484f58;
+
+  --radius:    14px;
+  --radius-sm: 8px;
+  --shadow:    0 4px 20px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.6);
+  --trans:     .18s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"] {
+  --bg:      #f0faf8;
+  --bg2:     #e0f5f1;
+  --surface: #ffffff;
+  --surface2:#f6fefe;
+  --border:  #c8ebe5;
+  --text:    #0d1f1c;
+  --text2:   #3d6b63;
+  --text3:   #8ab5ae;
+  --shadow:    0 4px 20px rgba(0,180,150,.08);
+  --shadow-lg: 0 8px 40px rgba(0,180,150,.14);
+}
+
+/* ══════════════════════════════════════
+   RESET
+══════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;height:100%}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100dvh;
+  transition:background var(--trans),color var(--trans);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ══════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════ */
+.app{
+  max-width:520px;
+  margin:0 auto;
+  padding:0 16px env(safe-area-inset-bottom,24px);
+  padding-bottom:100px;
+}
+
+/* ══════════════════════════════════════
+   HEADER
+══════════════════════════════════════ */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 0 6px;
+  position:sticky;top:0;z-index:50;
+  background:var(--bg);
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.9rem;
+  letter-spacing:.08em;
+  color:var(--teal);
+  line-height:1;
+}
+.logo sub{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:.55rem;
+  font-weight:700;
+  letter-spacing:.15em;
+  color:var(--text2);
+  text-transform:uppercase;
+  vertical-align:middle;
+  margin-left:4px;
+}
+.header-right{display:flex;gap:8px;align-items:center}
+
+.icon-btn{
+  width:38px;height:38px;
+  border-radius:10px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;
+  transition:all var(--trans);
+}
+.icon-btn:hover{border-color:var(--teal);color:var(--teal)}
+
+/* install button — always visible until installed */
+.install-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;
+  background:var(--teal);
+  color:#0d1f1c;
+  border-radius:50px;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.02em;
+  transition:all var(--trans);
+  box-shadow:0 2px 12px rgba(0,201,167,.3);
+  white-space:nowrap;
+}
+.install-pill:hover{background:var(--teal-dim);transform:translateY(-1px)}
+.install-pill.hidden{display:none!important}
+
+/* ══════════════════════════════════════
+   NAV
+══════════════════════════════════════ */
+.nav{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:4px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:4px;
+  margin:10px 0 20px;
+  box-shadow:var(--shadow);
+}
+.nav-btn{
+  padding:9px 4px;
+  border-radius:9px;
+  font-size:.75rem;
+  font-weight:600;
+  color:var(--text2);
+  text-align:center;
+  transition:all var(--trans);
+  letter-spacing:.01em;
+}
+.nav-btn.active{
+  background:var(--teal);
+  color:#0d1f1c;
+}
+
+/* ══════════════════════════════════════
+   PAGES
+══════════════════════════════════════ */
+.page{display:none}
+.page.active{display:block;animation:rise .22s ease}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ══════════════════════════════════════
+   TODAY PAGE
+══════════════════════════════════════ */
+.today-hero{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px 20px 18px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+  position:relative;
+  overflow:hidden;
+}
+.today-hero::before{
+  content:'';
+  position:absolute;top:-40px;right:-40px;
+  width:140px;height:140px;
+  background:radial-gradient(circle,rgba(0,201,167,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.today-greeting{font-size:.8rem;font-weight:500;color:var(--text2);margin-bottom:4px}
+.today-pct{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:3.8rem;
+  color:var(--teal);
+  line-height:1;
+  letter-spacing:.04em;
+}
+.today-sub{font-size:.82rem;color:var(--text2);margin-top:2px}
+.big-bar{
+  height:8px;background:var(--bg2);
+  border-radius:99px;overflow:hidden;
+  margin-top:14px;
+}
+.big-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--teal) 0%,var(--gold) 100%);
+  border-radius:99px;
+  transition:width .7s cubic-bezier(.4,0,.2,1);
+}
+
+.quote-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:13px 16px;
+  margin-bottom:16px;
+  font-size:.82rem;
+  font-style:italic;
+  color:var(--text2);
+  line-height:1.45;
+  box-shadow:var(--shadow);
+}
+
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.sec-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.25rem;
+  letter-spacing:.06em;
+  color:var(--text);
+}
+.pill-badge{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  color:var(--text2);
+  font-size:.72rem;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:50px;
+  letter-spacing:.04em;
+}
+
+/* ══════════════════════════════════════
+   HABIT CARD
+══════════════════════════════════════ */
+.habits-list{display:flex;flex-direction:column;gap:10px}
+.hcard{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:var(--shadow);
+  transition:transform var(--trans),box-shadow var(--trans);
+  position:relative;
+  overflow:hidden;
+}
+.hcard::before{
+  content:'';
+  position:absolute;left:0;top:0;bottom:0;
+  width:3px;
+  border-radius:3px 0 0 3px;
+  background:var(--hcolor,var(--teal));
+}
+.hcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.hcard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+.hcard-info{flex:1;min-width:0}
+.hname{
+  font-weight:700;font-size:.95rem;
+  color:var(--text);
+  margin-bottom:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hmeta{
+  display:flex;align-items:center;gap:8px;
+  font-size:.75rem;color:var(--text2);
+}
+.streak{color:var(--fire);font-weight:700;display:flex;align-items:center;gap:3px}
+.hcard-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.del-btn{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;color:var(--text3);
+  transition:all var(--trans);
+}
+.del-btn:hover{background:rgba(255,71,87,.15);color:var(--danger)}
+.check-btn{
+  width:38px;height:38px;border-radius:50%;
+  border:2px solid var(--border);
+  background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:transparent;
+  transition:all var(--trans);
+  flex-shrink:0;
+}
+.check-btn:hover:not(.done){border-color:var(--teal);color:var(--teal)}
+.check-btn.done{
+  background:var(--teal);border-color:var(--teal);
+  color:#0d1f1c;
+  box-shadow:0 3px 12px rgba(0,201,167,.4);
+}
+.prog-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.7rem;color:var(--text3);margin-bottom:5px;
+}
+.prog-bar{height:4px;background:var(--bg2);border-radius:99px;overflow:hidden}
+.prog-fill{
+  height:100%;
+  background:var(--hcolor,var(--teal));
+  border-radius:99px;
+  transition:width .6s ease;
+  opacity:.8;
+}
+
+/* ══════════════════════════════════════
+   STATS GRID
+══════════════════════════════════════ */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.scard{
+  border-radius:var(--radius);
+  padding:16px 14px;
+  position:relative;overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.scard.teal{background:linear-gradient(135deg,#00c9a7,#00a889)}
+.scard.fire{background:linear-gradient(135deg,#ff6b35,#e8522a)}
+.scard.gold{background:linear-gradient(135deg,#ffd166,#e5a800)}
+.scard-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.8;margin-bottom:6px;color:#fff}
+.scard-val{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#fff;line-height:1;letter-spacing:.04em}
+.scard-sub{font-size:.68rem;opacity:.75;color:#fff;margin-top:2px}
+.scard-icon{position:absolute;right:10px;top:10px;font-size:1.4rem;opacity:.25}
+
+/* ══════════════════════════════════════
+   WEEKLY PAGE
+══════════════════════════════════════ */
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.week-label{font-size:.85rem;font-weight:600;color:var(--text2)}
+.week-nav-btn{
+  width:32px;height:32px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;color:var(--text2);
+  transition:all var(--trans);
+}
+.week-nav-btn:hover{border-color:var(--teal);color:var(--teal)}
+.wtable-wrap{overflow-x:auto;border-radius:var(--radius)}
+.wtable{
+  width:100%;border-collapse:collapse;
+  background:var(--surface);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow);
+}
+.wtable th{
+  padding:11px 6px;text-align:center;
+  font-size:.68rem;font-weight:700;color:var(--text3);
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.wtable th:first-child{text-align:left;padding-left:14px}
+.wtable td{
+  padding:12px 6px;text-align:center;
+  border-bottom:1px solid var(--border);
+  font-size:.78rem;
+}
+.wtable tr:last-child td{border-bottom:none}
+.wtable td:first-child{text-align:left;padding-left:14px;font-weight:600;font-size:.8rem}
+.wdot{
+  width:26px;height:26px;border-radius:7px;
+  background:var(--surface2);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--text3);
+  cursor:pointer;transition:all var(--trans);
+  border:1px solid transparent;
+}
+.wdot.done{background:var(--teal);color:#0d1f1c;border-color:transparent}
+.wdot.today{border-color:var(--teal)}
+.hname-cell{display:flex;align-items:center;gap:7px}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ══════════════════════════════════════
+   STREAK PAGE
+══════════════════════════════════════ */
+.streak-hero{
+  background:linear-gradient(135deg,#ff6b35 0%,#e84c1a 100%);
+  border-radius:var(--radius);
+  padding:24px 20px;
+  margin-bottom:16px;
+  color:#fff;
+  box-shadow:0 8px 32px rgba(255,107,53,.35);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.streak-val{font-family:'Bebas Neue',sans-serif;font-size:4.5rem;line-height:1;letter-spacing:.04em}
+.streak-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.8;margin-bottom:4px}
+.streak-sub{font-size:.82rem;opacity:.75}
+.per-habit-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+  box-shadow:var(--shadow);margin-bottom:10px;
+  position:relative;overflow:hidden;
+}
+.per-habit-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--hcolor,var(--teal));
+}
+.ph-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ph-name{font-weight:700;font-size:.92rem}
+.ph-comps{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--teal);letter-spacing:.04em}
+.ph-comps-label{font-size:.65rem;color:var(--text3);margin-top:-2px;text-align:right}
+
+/* ══════════════════════════════════════
+   ADD BUTTON
+══════════════════════════════════════ */
+.add-btn{
+  width:100%;padding:15px;
+  background:var(--teal);color:#0d1f1c;
+  border-radius:var(--radius);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.1rem;letter-spacing:.08em;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all var(--trans);
+  box-shadow:0 4px 18px rgba(0,201,167,.35);
+  margin-top:12px;
+}
+.add-btn:hover{background:var(--teal-dim);transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,201,167,.45)}
+.add-btn:active{transform:none}
+
+/* ══════════════════════════════════════
+   ADD MODAL
+══════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(6px);
+  z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--trans);
+}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);
+  border-radius:20px 20px 0 0;
+  padding:28px 22px 40px;
+  width:100%;max-width:520px;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.overlay.open .modal{transform:none}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 22px}
+.modal-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.4rem;letter-spacing:.06em;margin-bottom:20px;
+}
+.field{margin-bottom:16px}
+.field label{
+  display:block;font-size:.75rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text2);margin-bottom:7px;
+}
+.field input{
+  width:100%;padding:12px 14px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  font-size:.92rem;outline:none;
+  transition:border-color var(--trans);
+}
+.field input:focus{border-color:var(--teal)}
+.color-row{display:flex;gap:10px;flex-wrap:wrap}
+.col-opt{
+  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  border:2.5px solid transparent;
+  transition:all var(--trans);
+}
+.col-opt.sel{border-color:var(--text);transform:scale(1.18)}
+.modal-btns{display:flex;gap:10px;margin-top:22px}
+.btn-cancel{
+  flex:1;padding:13px;border-radius:var(--radius-sm);
+  background:var(--bg2);color:var(--text2);
+  font-size:.88rem;font-weight:600;
+  transition:all var(--trans);
+}
+.btn-cancel:hover{background:var(--border)}
+.btn-save{
+  flex:2;padding:13px;border-radius:var(--radius-sm);
+  background:var(--teal);color:#0d1f1c;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1rem;letter-spacing:.06em;
+  transition:all var(--trans);
+  box-shadow:0 4px 14px rgba(0,201,167,.35);
+}
+.btn-save:hover{background:var(--teal-dim)}
+
+/* ══════════════════════════════════════
+   INSTALL MODAL
+══════════════════════════════════════ */
+.install-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  z-index:300;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.install-overlay.open{opacity:1;pointer-events:all}
+.install-sheet{
+  background:var(--surface);
+  border-radius:24px 24px 0 0;
+  padding:30px 24px 48px;
+  width:100%;max-width:520px;
+  transform:translateY(100%);
+  transition:transform .38s cubic-bezier(.4,0,.2,1);
+}
+.install-overlay.open .install-sheet{transform:none}
+.isheet-handle{width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 26px}
+.isheet-icon{
+  width:70px;height:70px;
+  background:linear-gradient(135deg,var(--teal),var(--teal-dim));
+  border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#0d1f1c;
+  margin:0 auto 18px;
+  box-shadow:0 6px 22px rgba(0,201,167,.4);
+  letter-spacing:.06em;
+}
+.isheet-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.5rem;letter-spacing:.06em;
+  text-align:center;margin-bottom:6px;
+}
+.isheet-sub{
+  font-size:.83rem;color:var(--text2);
+  text-align:center;margin-bottom:26px;line-height:1.5;
+}
+/* android */
+.android-install-btn{
+  width:100%;padding:16px;
+  background:var(--teal);color:#0d1f1c;
+  border-radius:var(--radius);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.1rem;letter-spacing:.08em;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 6px 22px rgba(0,201,167,.4);
+  transition:all var(--trans);margin-bottom:12px;
+}
+.android-install-btn:hover{background:var(--teal-dim)}
+/* ios steps */
+.ios-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.ios-step{
+  display:flex;align-items:center;gap:13px;
+  background:var(--bg2);border-radius:11px;padding:13px;
+}
+.ios-num{
+  width:26px;height:26px;flex-shrink:0;
+  background:var(--teal);color:#0d1f1c;
+  border-radius:50%;
+  font-size:.8rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.ios-text{font-size:.83rem;color:var(--text2);line-height:1.4}
+.ios-text strong{color:var(--text);font-weight:600}
+.share-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--teal);color:#0d1f1c;
+  padding:1px 7px;border-radius:5px;
+  font-size:.75rem;font-weight:700;
+  vertical-align:middle;margin:0 2px;
+}
+.dismiss-btn{
+  width:100%;padding:13px;
+  background:var(--bg2);color:var(--text2);
+  border-radius:var(--radius-sm);
+  font-size:.88rem;font-weight:600;
+  transition:all var(--trans);
+}
+.dismiss-btn:hover{background:var(--border)}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+.toast{
+  position:fixed;top:72px;left:50%;
+  transform:translateX(-50%) translateY(-12px);
+  background:var(--text);color:var(--bg);
+  padding:9px 20px;border-radius:50px;
+  font-size:.82rem;font-weight:600;
+  z-index:400;opacity:0;
+  transition:all .28s;pointer-events:none;
+  white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ══════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════ */
+.empty{
+  text-align:center;padding:36px 16px;
+  color:var(--text3);
+}
+.empty-icon{font-size:2.2rem;margin-bottom:10px}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;color:var(--text2);margin-bottom:5px}
+.empty-sub{font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">FUBY<sub>Habit Tracker</sub></div>
+    <div class="header-right">
+      <button class="install-pill" id="installBtn">📲 Install App</button>
+      <button class="icon-btn" id="themeBtn" title="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-btn active" data-page="today">Today</button>
+    <button class="nav-btn" data-page="habits">Habits</button>
+    <button class="nav-btn" data-page="weekly">Weekly</button>
+    <button class="nav-btn" data-page="stats">Stats</button>
+  </nav>
+
+  <!-- ══ TODAY ══ -->
+  <div class="page active" id="page-today">
+    <div class="today-hero">
+      <div class="today-greeting" id="greeting">Good morning ✦</div>
+      <div class="today-pct" id="todayPct">0%</div>
+      <div class="today-sub" id="todaySub">0 of 0 habits done today</div>
+      <div class="big-bar"><div class="big-bar-fill" id="bigFill" style="width:0%"></div></div>
+    </div>
+    <div class="quote-row">
+      <span style="font-size:1.1rem;flex-shrink:0">💬</span>
+      <span id="quoteText"></span>
+    </div>
+    <div class="sec-head">
+      <div class="sec-title">Your Habits</div>
+      <div class="pill-badge" id="activeCount">0 Active</div>
+    </div>
+    <div class="habits-list" id="todayList"></div>
+    <button class="add-btn" id="addToday">+ ADD HABIT</button>
+  </div>
+
+  <!-- ══ HABITS ══ -->
+  <div class="page" id="page-habits">
+    <div class="stat-grid">
+      <div class="scard teal">
+        <div class="scard-icon">📋</div>
+        <div class="scard-label">Total</div>
+        <div class="scard-val" id="sTotal">0</div>
+        <div class="scard-sub">habits</div>
+      </div>
+      <div class="scard fire">
+        <div class="scard-icon">🔥</div>
+        <div class="scard-label">Best</div>
+        <div class="scard-val" id="sBest">0</div>
+        <div class="scard-sub">day streak</div>
+      </div>
+      <div class="scard gold">
+        <div class="scard-icon">✅</div>
+        <div class="scard-label">Done</div>
+        <div class="scard-val" id="sDone">0</div>
+        <div class="scard-sub">today</div>
+      </div>
+    </div>
+    <div class="sec-head"><div class="sec-title">All Habits</div></div>
+    <div class="habits-list" id="habitsList"></div>
+    <button class="add-btn" id="addHabits">+ ADD HABIT</button>
+  </div>
+
+  <!-- ══ WEEKLY ══ -->
+  <div class="page" id="page-weekly">
+    <div class="week-nav">
+      <button class="week-nav-btn" id="wPrev">‹</button>
+      <div class="week-label" id="wLabel"></div>
+      <button class="week-nav-btn" id="wNext">›</button>
+    </div>
+    <div class="wtable-wrap">
+      <table class="wtable">
+        <thead><tr id="wHead"></tr></thead>
+        <tbody id="wBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ STATS ══ -->
+  <div class="page" id="page-stats">
+    <div class="streak-hero">
+      <div>
+        <div class="streak-label">🔥 Current Streak</div>
+        <div class="streak-val" id="curStreak">0</div>
+        <div class="streak-sub">days — keep the fire burning!</div>
+      </div>
+      <div style="font-size:3.5rem">🔥</div>
+    </div>
+    <div class="stat-grid" style="margin-bottom:18px">
+      <div class="scard teal">
+        <div class="scard-label">Today</div>
+        <div class="scard-val" id="sTodayPct">0%</div>
+        <div class="scard-sub">done</div>
+      </div>
+      <div class="scard fire">
+        <div class="scard-label">Best</div>
+        <div class="scard-val" id="sBest2">0</div>
+        <div class="scard-sub">day streak</div>
+      </div>
+      <div class="scard gold">
+        <div class="scard-label">Total</div>
+        <div class="scard-val" id="sAllDone">0</div>
+        <div class="scard-sub">logged</div>
+      </div>
+    </div>
+    <div class="sec-head"><div class="sec-title">Per Habit</div></div>
+    <div id="statsList"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ADD MODAL -->
+<div class="overlay" id="addOverlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Habit</div>
+    <div class="field">
+      <label>Habit Name</label>
+      <input id="hNameInput" placeholder="e.g. Morning Meditation" maxlength="50"/>
+    </div>
+    <div class="field">
+      <label>Colour</label>
+      <div class="color-row" id="colorRow"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="addCancel">Cancel</button>
+      <button class="btn-save" id="addSave">ADD HABIT</button>
+    </div>
+  </div>
+</div>
+
+<!-- INSTALL MODAL -->
+<div class="install-overlay" id="installOverlay">
+  <div class="install-sheet">
+    <div class="isheet-handle"></div>
+    <div class="isheet-icon">FUBY</div>
+    <div class="isheet-title">Install FUBY</div>
+    <div class="isheet-sub">Works offline. No app store. Add it to your home screen for the full experience.</div>
+
+    <div id="androidSection" style="display:none">
+      <button class="android-install-btn" id="androidBtn">📲 Install Now</button>
+      <button class="dismiss-btn" id="dis1">Maybe later</button>
+    </div>
+
+    <div id="iosSection" style="display:none">
+      <div class="ios-steps">
+        <div class="ios-step">
+          <div class="ios-num">1</div>
+          <div class="ios-text">Tap the <span class="share-icon">↑</span> <strong>Share</strong> button at the bottom of Safari</div>
+        </div>
+        <div class="ios-step">
+          <div class="ios-num">2</div>
+          <div class="ios-text">Scroll and tap <strong>"Add to Home Screen"</strong></div>
+        </div>
+        <div class="ios-step">
+          <div class="ios-num">3</div>
+          <div class="ios-text">Tap <strong>"Add"</strong> — FUBY opens like a real app! 🎉</div>
+        </div>
+      </div>
+      <button class="dismiss-btn" id="dis2">Got it!</button>
+    </div>
+
+    <div id="genericSection" style="display:none">
+      <div class="ios-steps">
+        <div class="ios-step">
+          <div class="ios-num">💡</div>
+          <div class="ios-text">Open this page in <strong>Chrome</strong> (Android) or <strong>Safari</strong> (iPhone), then use the browser menu → <strong>"Add to Home Screen"</strong></div>
+        </div>
+      </div>
+      <button class="dismiss-btn" id="dis3">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────
+const KEY = 'fuby_v1';
+let deferredPrompt = null;
+
+function todayKey() { return new Date().toISOString().slice(0,10) }
+function dateStr(d)  { return d.toISOString().slice(0,10) }
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || fresh() }
+  catch { return fresh() }
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(S)) }
+function fresh() { return { habits:[], logs:{}, theme:'dark', wOff:0 } }
+
+let S = load();
+if (S.wOff === undefined) S.wOff = 0;
+
+// ─── THEME ──────────────────────────────────────────────────────
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', S.theme);
+  document.getElementById('themeBtn').textContent = S.theme === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeColorMeta').content = S.theme === 'dark' ? '#0d1117' : '#f0faf8';
+}
+document.getElementById('themeBtn').addEventListener('click', () => {
+  S.theme = S.theme === 'dark' ? 'light' : 'dark';
+  save(); applyTheme();
+});
+applyTheme();
+
+// ─── GREETING + QUOTE ────────────────────────────────────────────
+function setGreeting() {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Good morning ✦' : h < 17 ? 'Good afternoon ✦' : 'Good evening ✦';
+  document.getElementById('greeting').textContent = g;
+}
+const QUOTES = [
+  "Consistency is the key to mastery.",
+  "Small steps every day lead to big results.",
+  "You don't rise to your goals — you fall to your systems.",
+  "Motivation gets you started. Habit keeps you going.",
+  "The secret of your future is hidden in your daily routine.",
+  "Every action is a vote for the person you want to become.",
+  "Win the morning, win the day.",
+  "Discipline is doing it even when you don't feel like it.",
+  "Progress, not perfection.",
+  "Show up. Every single day."
+];
+document.getElementById('quoteText').textContent = QUOTES[new Date().getDate() % QUOTES.length];
+setGreeting();
+
+// ─── COLORS ──────────────────────────────────────────────────────
+const COLORS = ['#00c9a7','#3b82f6','#a855f7','#ff6b35','#ffd166','#ef4444','#ec4899','#22c55e'];
+let pickedColor = COLORS[0];
+
+function buildColorPicker() {
+  const row = document.getElementById('colorRow');
+  row.innerHTML = '';
+  COLORS.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'col-opt' + (c === pickedColor ? ' sel' : '');
+    d.style.background = c;
+    d.onclick = () => {
+      pickedColor = c;
+      document.querySelectorAll('.col-opt').forEach(el => el.classList.remove('sel'));
+      d.classList.add('sel');
+    };
+    row.appendChild(d);
+  });
+}
+
+// ─── LOG HELPERS ─────────────────────────────────────────────────
+function logged(hid, dk)    { return !!(S.logs[hid]?.[dk]) }
+function toggleLog(hid, dk) {
+  if (!S.logs[hid]) S.logs[hid] = {};
+  S.logs[hid][dk] ? delete S.logs[hid][dk] : (S.logs[hid][dk] = 1);
+  save(); renderAll();
+}
+function completions(hid)   { return Object.keys(S.logs[hid] || {}).length }
+function curStreak(hid) {
+  let s=0, d=new Date();
+  while (logged(hid, dateStr(d))) { s++; d.setDate(d.getDate()-1) }
+  return s;
+}
+function bestStreak(hid) {
+  const dates = Object.keys(S.logs[hid]||{}).sort();
+  if (!dates.length) return 0;
+  let best=1,cur=1;
+  for (let i=1;i<dates.length;i++) {
+    const diff = (new Date(dates[i]) - new Date(dates[i-1])) / 86400000;
+    diff===1 ? (cur++, best=Math.max(best,cur)) : (cur=1);
+  }
+  return best;
+}
+function prog30(hid) {
+  let done=0, d=new Date();
+  for (let i=0;i<30;i++) { if(logged(hid,dateStr(d)))done++; d.setDate(d.getDate()-1) }
+  return Math.round(done/30*100);
+}
+function todayPct() {
+  if (!S.habits.length) return 0;
+  return Math.round(S.habits.filter(h=>logged(h.id,todayKey())).length / S.habits.length * 100);
+}
+function bestOverall()    { return Math.max(0,...S.habits.map(h=>bestStreak(h.id))) }
+function curOverall()     { return Math.max(0,...S.habits.map(h=>curStreak(h.id))) }
+function totalLogged()    { return S.habits.reduce((n,h)=>n+completions(h.id),0) }
+function doneTodayCount() { return S.habits.filter(h=>logged(h.id,todayKey())).length }
+
+// ─── ESCAPE HTML ─────────────────────────────────────────────────
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+// ─── HABIT CARD HTML ─────────────────────────────────────────────
+function cardHTML(h, showCheck) {
+  const s = curStreak(h.id), done = logged(h.id, todayKey());
+  const p = prog30(h.id), c = completions(h.id);
+  return `<div class="hcard" style="--hcolor:${h.color}">
+    <div class="hcard-top">
+      <div class="hcard-info">
+        <div class="hname">${esc(h.name)}</div>
+        <div class="hmeta">
+          <span class="streak">🔥 ${s} day${s!==1?'s':''}</span>
+          <span>• ${c} completion${c!==1?'s':''}</span>
+        </div>
+      </div>
+      <div class="hcard-actions">
+        <button class="del-btn" onclick="delHabit('${h.id}')">🗑</button>
+        ${showCheck ? `<button class="check-btn ${done?'done':''}" onclick="toggleLog('${h.id}','${todayKey()}')">✓</button>` : ''}
+      </div>
+    </div>
+    <div class="prog-row"><span>30-day progress</span><span>${p}%</span></div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div>
+  </div>`;
+}
+
+function emptyHTML(icon,title,sub) {
+  return `<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div>`;
+}
+
+// ─── RENDER TODAY ────────────────────────────────────────────────
+function renderToday() {
+  const pct  = todayPct();
+  const done = doneTodayCount();
+  document.getElementById('todayPct').textContent = pct+'%';
+  document.getElementById('todaySub').textContent = `${done} of ${S.habits.length} habits done today`;
+  document.getElementById('bigFill').style.width = pct+'%';
+  document.getElementById('activeCount').textContent = S.habits.length+' Active';
+  const el = document.getElementById('todayList');
+  el.innerHTML = S.habits.length
+    ? S.habits.map(h=>cardHTML(h,true)).join('')
+    : emptyHTML('🌱','No habits yet','Tap Add Habit to start your streak!');
+}
+
+// ─── RENDER HABITS ───────────────────────────────────────────────
+function renderHabits() {
+  document.getElementById('sTotal').textContent = S.habits.length;
+  document.getElementById('sBest').textContent  = bestOverall();
+  document.getElementById('sDone').textContent  = doneTodayCount();
+  const el = document.getElementById('habitsList');
+  el.innerHTML = S.habits.length
+    ? S.habits.map(h=>cardHTML(h,false)).join('')
+    : emptyHTML('📋','No habits yet','Build your routine one habit at a time.');
+}
+
+// ─── RENDER WEEKLY ───────────────────────────────────────────────
+function weekDates(off) {
+  const now = new Date(), day = now.getDay();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - (day===0?6:day-1) + off*7);
+  return Array.from({length:7},(_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d });
+}
+function renderWeekly() {
+  const days = weekDates(S.wOff);
+  const tk   = todayKey();
+  document.getElementById('wLabel').textContent =
+    days[0].toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' +
+    days[6].toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+  const head = document.getElementById('wHead');
+  head.innerHTML = '<th>Habit</th>' + days.map(d => {
+    const isTod = dateStr(d)===tk;
+    const dn = d.toLocaleDateString('en-US',{weekday:'short'});
+    const dd = d.getDate();
+    return `<th style="${isTod?'color:var(--teal)':''}">${dn}<br>${dd}</th>`;
+  }).join('');
+
+  const body = document.getElementById('wBody');
+  if (!S.habits.length) {
+    body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text3)">No habits yet</td></tr>`;
+    return;
+  }
+  body.innerHTML = S.habits.map(h => {
+    const cells = days.map(d => {
+      const k = dateStr(d), done = logged(h.id,k), isT = k===tk;
+      return `<td><div class="wdot ${done?'done':''} ${isT?'today':''}"
+        onclick="toggleLog('${h.id}','${k}')">${done?'✓':''}</div></td>`;
+    }).join('');
+    return `<tr><td><div class="hname-cell">
+      <div class="cdot" style="background:${h.color}"></div>${esc(h.name)}
+    </div></td>${cells}</tr>`;
+  }).join('');
+}
+document.getElementById('wPrev').onclick = ()=>{ S.wOff--; save(); renderWeekly() };
+document.getElementById('wNext').onclick = ()=>{ S.wOff++; save(); renderWeekly() };
+
+// ─── RENDER STATS ────────────────────────────────────────────────
+function renderStats() {
+  document.getElementById('curStreak').textContent  = curOverall();
+  document.getElementById('sTodayPct').textContent  = todayPct()+'%';
+  document.getElementById('sBest2').textContent     = bestOverall();
+  document.getElementById('sAllDone').textContent   = totalLogged();
+  const el = document.getElementById('statsList');
+  if (!S.habits.length) {
+    el.innerHTML = emptyHTML('📊','No data yet','Add habits and start tracking!');
+    return;
+  }
+  el.innerHTML = S.habits.map(h => {
+    const s=curStreak(h.id), b=bestStreak(h.id), p=prog30(h.id), c=completions(h.id);
+    return `<div class="per-habit-card" style="--hcolor:${h.color}">
+      <div class="ph-top">
+        <div>
+          <div class="ph-name">${esc(h.name)}</div>
+          <div class="hmeta">
+            <span class="streak">🔥 ${s} day streak</span>
+            <span>• Best: ${b}</span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="ph-comps">${c}</div>
+          <div class="ph-comps-label">completions</div>
+        </div>
+      </div>
+      <div class="prog-row"><span>30-day consistency</span><span>${p}%</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── RENDER ALL ──────────────────────────────────────────────────
+function renderAll() { renderToday(); renderHabits(); renderWeekly(); renderStats() }
+renderAll();
+
+// ─── NAV ─────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('page-'+btn.dataset.page).classList.add('active');
+  };
+});
+
+// ─── ADD MODAL ───────────────────────────────────────────────────
+function openAdd() {
+  buildColorPicker();
+  document.getElementById('hNameInput').value = '';
+  document.getElementById('addOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('hNameInput').focus(), 320);
+}
+function closeAdd() { document.getElementById('addOverlay').classList.remove('open') }
+
+document.getElementById('addToday').onclick   = openAdd;
+document.getElementById('addHabits').onclick  = openAdd;
+document.getElementById('addCancel').onclick  = closeAdd;
+document.getElementById('addOverlay').onclick = e => { if(e.target===document.getElementById('addOverlay'))closeAdd() };
+
+document.getElementById('addSave').onclick = () => {
+  const name = document.getElementById('hNameInput').value.trim();
+  if (!name) { toast('Please enter a habit name'); return }
+  S.habits.push({ id: Date.now().toString(), name, color: pickedColor, created: todayKey() });
+  save(); renderAll(); closeAdd();
+  toast('✅ Habit added!');
+};
+document.getElementById('hNameInput').onkeydown = e => { if(e.key==='Enter') document.getElementById('addSave').click() };
+
+// ─── DELETE ──────────────────────────────────────────────────────
+window.delHabit = id => {
+  if (!confirm('Delete this habit and all its data?')) return;
+  S.habits = S.habits.filter(h=>h.id!==id);
+  delete S.logs[id];
+  save(); renderAll();
+  toast('Habit deleted');
+};
+
+// ─── TOAST ───────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+// ─── INSTALL LOGIC ───────────────────────────────────────────────
+const installBtn     = document.getElementById('installBtn');
+const installOverlay = document.getElementById('installOverlay');
+
+const isIOS       = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone= window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+// Hide install button if already running as installed PWA
+if (isStandalone) installBtn.classList.add('hidden');
+
+function openInstallSheet() {
+  // Show the right section
+  document.getElementById('androidSection').style.display = 'none';
+  document.getElementById('iosSection').style.display     = 'none';
+  document.getElementById('genericSection').style.display = 'none';
+
+  if (deferredPrompt) {
+    document.getElementById('androidSection').style.display = 'block';
+  } else if (isIOS) {
+    document.getElementById('iosSection').style.display = 'block';
+  } else {
+    document.getElementById('genericSection').style.display = 'block';
+  }
+  installOverlay.classList.add('open');
+}
+function closeInstallSheet() { installOverlay.classList.remove('open') }
+
+installBtn.onclick = openInstallSheet;
+installOverlay.onclick = e => { if(e.target===installOverlay) closeInstallSheet() };
+['dis1','dis2','dis3'].forEach(id => {
+  document.getElementById(id).onclick = closeInstallSheet;
+});
+
+// Android native install button
+document.getElementById('androidBtn').onclick = () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    deferredPrompt = null;
+    closeInstallSheet();
+    if (choice.outcome === 'accepted') {
+      installBtn.classList.add('hidden');
+      toast('🎉 FUBY installed!');
+    }
+  });
+};
+
+// Capture Android install prompt — THIS is what enables the native dialog
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();       // stop mini-bar, we control the UX
+  deferredPrompt = e;       // save it
+  installBtn.classList.remove('hidden');
+
+  // Auto-show install sheet on first visit (after 5s)
+  if (!sessionStorage.getItem('fuby_install_shown')) {
+    sessionStorage.setItem('fuby_install_shown','1');
+    setTimeout(openInstallSheet, 5000);
+  }
+});
+
+// iOS: auto-show guide after 5s on first visit
+if (isIOS && !isStandalone && !sessionStorage.getItem('fuby_install_shown')) {
+  sessionStorage.setItem('fuby_install_shown','1');
+  setTimeout(openInstallSheet, 5000);
+}
+
+// When app is installed natively
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  installBtn.classList.add('hidden');
+  toast('🎉 FUBY installed successfully!');
+});
+
+// ─── SERVICE WORKER ──────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.warn('SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
